@@ -1,20 +1,38 @@
 <?php
 session_start();
+
+// ========== Подключение к базе данных ==========
+$products = []; // по умолчанию пустой массив товаров
+try {
+    // !!! Замени параметры на свои реальные данные от хостинга !!!
+    $pdo = new PDO(
+        'mysql:host=localhost;dbname=diplom;port=3306',
+        'root',
+        ''
+    );
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Получаем последние товары
+    $sql = 'SELECT * FROM products ORDER BY id DESC';
+    $query = $pdo->prepare($sql);
+    $query->execute();
+    $products = $query->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Ошибка подключения – оставляем $products пустым
+    // Можно залогировать: error_log($e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html>
-    
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width-device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Легкий шаг | Интернет-магазин</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
 </head>
-
 <body>
     <div class="header">
         <div class="container">
@@ -28,20 +46,16 @@ session_start();
                         <li><a href="products.php">Продукты</a></li>
                         <li><a href="about.php">О нас</a></li>
                         <li><a href="contact.php">Контакты</a></li>
-                          <?php   
-                            if(isset($_COOKIE['login']) ) {
-                                echo'<li><a href="/user.php"</a>Кабинет пользователя</li>';
-
-                            }
-                            else{
-                                echo '<li><a href="account.php">Аккаунт</a></li>';
-                            }
-                         ?>
+                        <?php if (isset($_COOKIE['login'])): ?>
+                            <li><a href="/user.php">Кабинет пользователя</a></li>
+                        <?php else: ?>
+                            <li><a href="account.php">Аккаунт</a></li>
+                        <?php endif; ?>
                     </ul>
                 </nav>
                 <a href="cart.php" class="cart-link">
                     <img src="images/cart.png" width="30px" height="30px" alt="Корзина">
-                    <?php if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                    <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
                         <span class="cart-count"><?= array_sum(array_column($_SESSION['cart'], 'quantity')); ?></span>
                     <?php endif; ?>
                 </a>
@@ -60,7 +74,7 @@ session_start();
         </div>
     </div>
 
-    <!------------------------------ категории ------------------------------>
+    <!-- категории -->
     <div class="categories">
         <div class="small-container">
             <div class="row">
@@ -77,7 +91,7 @@ session_start();
         </div>
     </div>
 
-    <!------------------------------ Избранные товары ------------------------------>
+    <!-- Избранные товары -->
     <div class="small-container">
         <h2 class="title">Избранные товары</h2>
         <div class="row">
@@ -85,11 +99,7 @@ session_start();
                 <a href="products-details.php"><img src="images/product-11.jpg"></a>
                 <a href="products-details.php"><h4>Спортивные кроссовки Downshifter</h4></a>
                 <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-half-o"></i>
-                    <i class="fa fa-star-o"></i>
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i><i class="fa fa-star-o"></i>
                 </div>
                 <p>5000₽</p>
                 <form action="add_to_cart.php" method="POST" class="add-to-cart-form">
@@ -104,12 +114,7 @@ session_start();
                 <a href="products-details.php"><img src="images/product-2.jpg"></a>
                 <h4>Беговые кроссовки с шнуровкой</h4>
                 <div class="rating">
-
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-half-o"></i>
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
                 </div>
                 <p>4950₽</p>
                 <form action="add_to_cart.php" method="POST" class="add-to-cart-form">
@@ -117,54 +122,38 @@ session_start();
                     <input type="hidden" name="product_name" value="Беговые кроссовки с шнуровкой">
                     <input type="hidden" name="product_price" value="35.00">
                     <input type="hidden" name="product_image" value="product-2.jpg">
-                     <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                    <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
                 </form>
             </div>
         </div>
 
         <h2 class="title">Последние товары</h2>
         <div class="row">
-            <?php
-             
-                $pdo = new PDO('mysql:host=dpg-d8a85utckfvc73cabalg-a;dbname=diplom_ga3d;port=5432', 'shikokumid', 'vCrsdOCvTVceNDQBBZjb1N04A2mYX6O7');
- 
-                $sql = 'SELECT * FROM products ORDER BY id DESC';
-            $query = $pdo->prepare($sql);
-            $query->execute();
-            $products = $query->fetchAll(PDO::FETCH_ASSOC);
-            
-            foreach($products as $el) {
-                echo '
-                <div class="col-4">
-                    <a href="products-details.php"><img src="images/'.$el['image'].'"></a>
-                    <h4>'.$el['item'].'</h4>
-                    <div class="rating">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
+            <?php if (!empty($products)): ?>
+                <?php foreach ($products as $el): ?>
+                    <div class="col-4">
+                        <a href="products-details.php"><img src="images/<?= htmlspecialchars($el['image']) ?>"></a>
+                        <h4><?= htmlspecialchars($el['item']) ?></h4>
+                        <div class="rating">
+                            <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i><i class="fa fa-star-o"></i>
+                        </div>
+                        <p>₽<?= number_format((float)$el['price'], 2) ?></p>
+                        <form action="add_to_cart.php" method="POST" class="add-to-cart-form">
+                            <input type="hidden" name="product_id" value="<?= $el['id'] ?>">
+                            <input type="hidden" name="product_name" value="<?= htmlspecialchars($el['item']) ?>">
+                            <input type="hidden" name="product_price" value="<?= $el['price'] ?>">
+                            <input type="hidden" name="product_image" value="<?= htmlspecialchars($el['image']) ?>">
+                            <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                        </form>
                     </div>
-                    <p>$'.$el['price'].'</p>
-                    <form action="add_to_cart.php" method="POST" class="add-to-cart-form">
-                        <input type="hidden" name="product_id" value="'.$el['id'].'">
-                        <input type="hidden" name="product_name" value="'.$el['item'].'">
-                        <input type="hidden" name="product_price" value="'.$el['price'].'">
-                        <input type="hidden" name="product_image" value="'.$el['image'].'">
-                        <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
-                     </form>
-                </div>'
-                        
-                     
-                    ;
-
-                }
-            ?>
-                
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="text-align:center; color:#999;">Товары временно недоступны. Зайдите позже или проверьте подключение к базе данных.</p>
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-------------------------- предложение ------------------------------>
+    <!-- предложение -->
     <div class="full-width-offer">
         <div class="row">
             <div class="col-2">
@@ -218,14 +207,23 @@ session_start();
             <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
-</body>
-        <script>
-            // Adding to wb
-             document.querySelectorAll('.add-to-cart-form').forEach(form => {
+
+    <!-- скрипты -->
+    <script>
+        var MenuItems = document.getElementById("MenuItems");
+        MenuItems.style.maxHeight = "0px";
+        function menutoggle() {
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px";
+            } else {
+                MenuItems.style.maxHeight = "0px";
+            }
+        }
+
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
-
                 fetch('add_to_cart.php', {
                     method: 'POST',
                     body: formData
@@ -241,7 +239,7 @@ session_start();
                 });
             });
         });
-        // calc products in wb
+
         function updateCartCount() {
             fetch('get_cart_count.php')
                 .then(response => response.text())
@@ -261,81 +259,25 @@ session_start();
                         if (cartCountSpan) cartCountSpan.remove();
                     }
                 });
-            }
-            // Обработка добавления в избранное
-            document.querySelectorAll('.add-to-wishlist-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const productId = this.getAttribute('data-product-id');
-                    
-                    // Проверяем авторизацию
-                    fetch('check_auth.php')
-                        .then(response => response.text())
-                        .then(isAuth => {
-                            if (isAuth === 'not_logged_in') {
-                                window.location.href = 'account.php';
-                                return;
-                            }
-                            
-                            // Добавляем/удаляем из избранного
-                            fetch('add_to_wishlist.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: 'product_id=' + productId
-                            })
-                            .then(response => response.text())
-                            .then(data => {
-                                if (data === 'added') {
-                                    this.classList.add('in-wishlist');
-                                    this.innerHTML = '<i class="fa fa-heart"></i>';
-                                    showMessage('Товар добавлен в избранное!', 'success');
-                                } else if (data === 'removed') {
-                                    this.classList.remove('in-wishlist');
-                                    this.innerHTML = '<i class="fa fa-heart"></i>';
-                                    showMessage('Товар удален из избранного', 'info');
-                                }
-                            });
-                        });
-                });
-            });
+        }
 
-            function showMessage(text, type) {
-                const message = document.createElement('div');
-                message.className = `cart-message cart-${type}`;
-                message.textContent = text;
-                document.body.appendChild(message);
-                
-                setTimeout(() => {
-                    message.remove();
-                }, 3000);
-}
-        </script>
-        <!----------------------------------- js для переключения меню -------------------------------------->
-        <script>
-            var menuItems=document.getElementById("MenuItems");
-            
-            MenuItems.style.maxHeight="0px";
-            function menutoggle(){
-                if(MenuItems.style.maxHeight == "0px"){
-                    MenuItems.style.maxHeight="200px";
-                }
-                else{
-                    MenuItems.style.maxHeight="0px";
-                }
-            }
-        </script>
-        
-                <!----------------------------------- js для переключения форм -------------------------------------->
-        <script>
-            var LoginForm=document.getElementById("LoginForm");
-            var RegForm=document.getElementById("RegForm");
-            var Indicator=document.getElementById("Indicator");
-            
-            function register(){
-                RegForm.style.transform}
-        </script>
-      
-
-
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = 'cart-message';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.padding = '15px 25px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.fontWeight = '600';
+            message.style.zIndex = '1000';
+            message.style.animation = 'slideIn 0.5s, fadeOut 0.5s 2.5s forwards';
+            message.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
+            message.textContent = text;
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+        }
+    </script>
+</body>
 </html>
