@@ -5,11 +5,7 @@ session_start();
 $products = []; // по умолчанию пустой массив товаров
 try {
     // !!! Замени параметры на свои реальные данные от хостинга !!!
-    $pdo = new PDO(
-        'mysql:host=dpg-d8a85utckfvc73cabalg-a;dbname=diplom_ga3d;port=5432',
-        'shikokumid',
-        'vCrsdOCvTVceNDQBBZjb1N04A2mYX6O7'
-    );
+    $pdo = new PDO( 'mysql:host=dpg-d8abfkog4nts73dbvulg-a;dbname=diplom_xi6u;port=5432', 'shikoku', 'qSTMZdU1idwuWso7eTiePld8lbkqgHjd');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Получаем последние товары
