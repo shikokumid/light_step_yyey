@@ -2,7 +2,11 @@
 session_start();
 
 // Подключение к БД
-$pdo = new PDO('mysql:host=localhost;dbname=diplom;port=3306', 'root', '');
+    $pdo = new PDO(
+        'mysql:host=dpg-d8a85utckfvc73cabalg-a;dbname=diplom_ga3d;port=5432',
+        'shikokumid',
+        'vCrsdOCvTVceNDQBBZjb1N04A2mYX6O7'
+    );
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Получаем все товары
