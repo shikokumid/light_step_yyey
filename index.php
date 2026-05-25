@@ -121,7 +121,7 @@ session_start();
                 </form>
             </div>
         </div>
-<!--Последние товары-->
+
         <h2 class="title">Последние товары</h2>
         <div class="row">
             <?php
