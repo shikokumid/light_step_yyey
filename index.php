@@ -126,7 +126,7 @@ session_start();
         <div class="row">
             <?php
              
-                $pdo = new PDO('mysql:host=dpg-d8a85utckfvc73cabalg-a;dbname=diplom_ga3d;port=5432', 'shikokumid', 'vCrsdOCvTVceNDQBBZjb1N04A2mYX6O7');
+                //$pdo = new PDO('mysql:host=dpg-d8a85utckfvc73cabalg-a;dbname=diplom_ga3d;port=5432', 'shikokumid', 'vCrsdOCvTVceNDQBBZjb1N04A2mYX6O7');
  
                 $sql = 'SELECT * FROM products ORDER BY id DESC';
             $query = $pdo->prepare($sql);
