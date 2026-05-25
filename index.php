@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 // Подключаемся к PostgreSQL
 try {
     $pdo = new PDO(
