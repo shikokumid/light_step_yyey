@@ -11,7 +11,8 @@ if (!isset($_COOKIE['login'])) {
 $username = $_COOKIE['login'];
 
 // Подключение к базе данных
-$pdo = new PDO('mysql:host=localhost;dbname=diplom;port=3306', 'root', '');
+$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
+ 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Создаем таблицу orders, если ее нет
