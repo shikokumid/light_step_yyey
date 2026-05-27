@@ -2,8 +2,8 @@
 // auth.php - авторизация пользователя
 
 // Подключаем файл с подключением к базе данных
-$pdo = new PDO('mysql:host=localhost;dbname=diplom;port=3306', 'root', '');
-
+$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
+ 
 // Получаем данные из формы
 $login = trim(filter_var($_POST['login'], FILTER_SANITIZE_SPECIAL_CHARS));
 $password = trim($_POST['password']); // Пароль не фильтруем для хеширования
