@@ -1,6 +1,9 @@
 FROM php:8.2-apache
-RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork
+
 RUN docker-php-ext-install pdo_mysql mysqli
+
 COPY . /var/www/html/
-EXPOSE 80
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+
+CMD sh -c "sed -i \"s/\\\${PORT}/${PORT}/g\" /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && apache2-foreground"
