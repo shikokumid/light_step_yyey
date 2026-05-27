@@ -2,8 +2,8 @@
 session_start();
 
 // Подключение к БД
-$pdo = new PDO( 'mysql:host=dpg-d8abfkog4nts73dbvulg-a;dbname=diplom_xi6u;port=5432', 'shikoku', 'qSTMZdU1idwuWso7eTiePld8lbkqgHjd');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
+ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Получаем все товары
 $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
