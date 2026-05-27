@@ -91,7 +91,7 @@ session_start();
         <div class="row">
             <?php
              
-                $pdo = new PDO('mysql:host=fdb1031.runhosting.com;dbname=4760064_shikoku;port=3306', '4760064_shikoku', 'mierdalove10');
+                $pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
  
                 $sql = 'SELECT * FROM products ORDER BY id DESC';
             $query = $pdo->prepare($sql);
