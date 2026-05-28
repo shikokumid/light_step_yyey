@@ -11,7 +11,7 @@ $username = $_COOKIE['login'];
 
 // Подключение к базе данных
 $pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
- $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Получаем ID пользователя
 $userStmt = $pdo->prepare("SELECT id FROM regisrtation WHERE NAME = ?");
@@ -23,6 +23,17 @@ $user_id = $user['id'];
 $wishlistCountStmt = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?");
 $wishlistCountStmt->execute([$user_id]);
 $wishlistCount = $wishlistCountStmt->fetch()['count'];
+
+// ------------------ ДОБАВЛЕНО: подсчёт количества заказов ------------------
+$orderCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_login = ?");
+$orderCountStmt->execute([$username]);
+$orderCount = $orderCountStmt->fetchColumn();  // число заказов
+
+// Получаем последний заказ (дата) для отображения
+$lastOrderStmt = $pdo->prepare("SELECT order_date FROM orders WHERE user_login = ? ORDER BY order_date DESC LIMIT 1");
+$lastOrderStmt->execute([$username]);
+$lastOrder = $lastOrderStmt->fetch();
+// -------------------------------------------------------------------------
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +46,6 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-   
 </head>
 <body>
     <div class="header">
@@ -50,7 +60,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                         <li><a href="products.php">Продукты</a></li>
                         <li><a href="about.php">О нас</a></li>
                         <li><a href="contact.php">Контакты</a></li>
-                        <?php   
+                        <?php
                         if(isset($_COOKIE['login'])) {
                             echo '<li><a href="/user.php" class="active">Кабинет пользователя</a></li>';
                         } else {
@@ -62,7 +72,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                 <a href="cart.php" class="cart-link">
                     <img src="images/cart.png" width="30px" height="30px">
                     <?php if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                        <span class="cart-count"><?php echo count($_SESSION['cart']); ?></span>
+                        <span class="cart-count"><?php echo array_sum(array_column($_SESSION['cart'], 'quantity')); ?></span>
                     <?php endif; ?>
                 </a>
                 <img src="images/menu.png" class="menu-icon" onClick="menutoggle()">
@@ -80,7 +90,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                 <i class="fa fa-sign-out"></i> Выйти
             </a>
         </div>
-        
+
         <div class="user-menu">
             <a href="user.php" class="user-menu-item active">
                 <i class="fa fa-user"></i> Профиль
@@ -98,29 +108,46 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                 <i class="fa fa-cog"></i> Настройки
             </a>
         </div>
-        
+
         <div class="user-content">
             <h2 class="user-section-title">Личный кабинет</h2>
-            
+
             <div class="profile-info">
                 <div class="profile-card">
                     <h3><i class="fa fa-user-circle"></i> Личная информация</h3>
                     <p><strong>Имя пользователя:</strong> <?php echo htmlspecialchars($username); ?></p>
                     <p><strong>Статус аккаунта:</strong> Активен</p>
                     <p><strong>Дата регистрации:</strong> <?php echo date('d.m.Y'); ?></p>
-                    <p><strong>Количество заказов:</strong> 0</p>
+                    <!-- ИЗМЕНЕНО: динамическое количество заказов -->
+                    <p><strong>Количество заказов:</strong> <?php echo $orderCount; ?></p>
                 </div>
-                
+
                 <div class="profile-card">
                     <h3><i class="fa fa-shopping-cart"></i> Корзина и заказы</h3>
-                    <p><strong>Товаров в корзине:</strong> 
-                        <?php echo isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0; ?>
+                    <!-- ИЗМЕНЕНО: общее количество товаров в корзине (единиц) -->
+                    <p><strong>Товаров в корзине:</strong>
+                        <?php
+                            if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+                                echo array_sum(array_column($_SESSION['cart'], 'quantity'));
+                            } else {
+                                echo '0';
+                            }
+                        ?>
                     </p>
                     <p><strong>Товаров в избранном:</strong> <?php echo $wishlistCount; ?></p>
-                    <p><strong>Всего заказов:</strong> 0</p>
-                    <p><strong>Последний заказ:</strong> Нет заказов</p>
+                    <!-- ДОБАВЛЕНО: динамическое количество заказов и последний заказ -->
+                    <p><strong>Всего заказов:</strong> <?php echo $orderCount; ?></p>
+                    <p><strong>Последний заказ:</strong>
+                        <?php
+                            if ($lastOrder) {
+                                echo date('d.m.Y', strtotime($lastOrder['order_date']));
+                            } else {
+                                echo 'Нет заказов';
+                            }
+                        ?>
+                    </p>
                 </div>
-                
+
                 <div class="profile-card">
                     <h3><i class="fa fa-star"></i> Активность</h3>
                     <p><strong>Статус покупателя:</strong> Новый клиент</p>
@@ -129,7 +156,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                     <p><strong>Рейтинг:</strong> ☆☆☆☆☆</p>
                 </div>
             </div>
-            
+
             <div style="margin-top: 30px;">
                 <h3 style="color: var(--primary-color); margin-bottom: 15px;">Быстрые действия</h3>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -185,9 +212,8 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
             <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
-    
+
     <script>
-        // Функция для переключения меню
         var MenuItems = document.getElementById("MenuItems");
         MenuItems.style.maxHeight = "0px";
         function menutoggle() {
@@ -216,8 +242,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                         if (cartCountSpan) cartCountSpan.remove();
                     }
                 });
-            }
-        
+        }
     </script>
 </body>
 </html>
