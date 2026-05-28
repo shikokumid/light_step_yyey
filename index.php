@@ -17,14 +17,17 @@ session_start();
             background-color: green;
             color: white;
 	}
+	.col-4 {
+    text-align: center;
+	}
+
 	.col-4 img {
-	    width: 100%;
-	    max-width: 220px;
-	    height: 220px;
+	    width: 260px;
+	    height: 180px;
 	    object-fit: cover;
+	    border-radius: 8px;
 	    display: block;
 	    margin: 0 auto;
-
 	}	
 </style>
 </head>
