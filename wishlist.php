@@ -274,12 +274,14 @@ $wishlistItems = $wishlistStmt->fetchAll();
                 })
                 .then(response => response.text())
                 .then(data => {
+                    data = data.trim();
+                
                     if (data === 'success') {
                         showMessage('Товар добавлен в корзину!', 'success');
-                        // Обновляем счетчик корзины в шапке
                         updateCartCount();
                     } else {
-                        showMessage('Товар добавлен в корзину', 'error');
+                        showMessage('Ошибка при добавлении в корзину', 'error');
+                        console.log('Ответ add_to_cart.php:', data);
                     }
                 });
             });
