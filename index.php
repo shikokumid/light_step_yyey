@@ -16,6 +16,14 @@ session_start();
     .cart-message {
             background-color: green;
             color: white;
+	.col-4 img {
+    width: 100%;
+    max-width: 220px;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
 }
 </style>
 </head>
