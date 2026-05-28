@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    
 </head>
 <body>
     <!-- Шапка (как на других страницах) -->
@@ -100,14 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                     <div class="contact-info-icon"><i class="fa fa-map-marker"></i></div>
                     <div class="contact-info-text">
                         <h4>Адрес</h4>
-                        <p>г. Москва, ул. Тверская, д. 1<br>М "Легкий шаг", 3 этаж</p>
+                        <!-- ИЗМЕНЕНО: Новосибирск, Красный проспект -->
+                        <p>г. Новосибирск, Красный проспект, д. 177<br>ТЦ "Легкий шаг", 3 этаж</p>
                     </div>
                 </div>
                 <div class="contact-info-item">
                     <div class="contact-info-icon"><i class="fa fa-phone"></i></div>
                     <div class="contact-info-text">
                         <h4>Телефон</h4>
-                        <p>+7 (495) 123-45-67<br>+7 (800) 555-35-35</p>
+                        <p>+7 (383) 249-50-50<br>+7 (800) 555-35-35</p>
                     </div>
                 </div>
                 <div class="contact-info-item">
@@ -146,9 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             </div>
         </div>
 
-        <!-- Карта -->
+        <!-- Карта: Новосибирск, Красный проспект, 177 -->
         <div class="map-container">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.278230906999!2d37.61582931590116!3d55.757570980552!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a5a7b8d3b5f%3A0x5d8a5e5d5f5c5e5d!2sTverskaya%20St%2C%20Moscow!5e0!3m2!1sen!2sru!4v1620000000000" allowfullscreen="" loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5717.629558984316!2d82.921084!3d55.030471!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42dfe5c75a7a5d3f%3A0x6c8b7e3c6f5a3a0e!2z0JrRgNCw0YHQvdGL0Lkg0L_RgNC-0YHQv9C10LrRgiwgMTc3LCDQndC-0LLQvtGB0LjQsdC40YDRgdC6LCA2MzAwNDk!5e0!3m2!1sru!2sru!4v1717230400000" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             <div class="row">
                 <div class="footer-col-1">
                     <h3>Скачайте наше приложение</h3>
-                    <p>Скачайте приложение для Android и iOS.</p>
+                    <p>Доступно для iOS и Android</p>
                     <div class="app-logo">
                         <img src="images/play-store.png" alt="">
                         <img src="images/app-store.png" alt="">
@@ -171,14 +171,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 <div class="footer-col-3">
                     <h3>Полезные ссылки</h3>
                     <ul>
-                        <li>Купоны</li>
-                        <li>Блог</li>
-                        <li>Политика возврата</li>
-                        <li>Присоединяйтесь к партнёрской программе</li>
+                        <li><a href="about.php">О нас</a></li>
+                        <li><a href="blog.php">Блог</a></li>
+                        <li><a href="return-policy.php">Возврат</a></li>
+                        <li><a href="contact.php">Контакты</a></li>
                     </ul>
                 </div>
                 <div class="footer-col-4">
-                    <h3>Следите за нами</h3>
+                    <h3>Социальные сети</h3>
                     <ul>
                         <li><a href="https://web.telegram.org"><i class="fa fa-telegram"></i> Telegram</a></li>
                         <li><a href="https://m.vk.com/"><i class="fa fa-vk"></i> Вконтакте</a></li>
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 </div>
             </div>
             <hr>
-            <p class="copyright">Авторские права 2021 - А.Дмитрий</p>
+            <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
 
