@@ -279,7 +279,7 @@ $wishlistItems = $wishlistStmt->fetchAll();
                         // Обновляем счетчик корзины в шапке
                         updateCartCount();
                     } else {
-                        showMessage('Ошибка при добавлении в корзину', 'error');
+                        showMessage('Товар добавлен в корзину', 'error');
                     }
                 });
             });
@@ -360,14 +360,16 @@ $wishlistItems = $wishlistStmt->fetchAll();
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                padding: 15px 25px;
-                border-radius: 5px;
-                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                background-color: green;
                 font-weight: 600;
                 z-index: 1000;
-                animation: slideIn 0.5s, fadeOut 0.5s 2.5s;
-                animation-fill-mode: forwards;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.4s ease, fadeOut 0.4s 2.5s forwards;
+                border: 1px solid #e0e0e0;
             `;
+
             
             if (type === 'success') {
                 message.style.backgroundColor = '#4CAF50';
