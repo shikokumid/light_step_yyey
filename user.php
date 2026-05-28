@@ -159,7 +159,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                     </div>
                 </div>
                 <div class="footer-col-2">
-                    <img src="images/logo-white.png">
+                    <img src="images/logoi.png">
                     <p>Наша цель — сделать спорт доступным для всех.</p>
                 </div>
                 <div class="footer-col-3">
@@ -182,7 +182,7 @@ $wishlistCount = $wishlistCountStmt->fetch()['count'];
                 </div>
             </div>
             <hr>
-            <p class="copyright">Авторские права 2021 - Apurba Kr. Pramanik</p>
+            <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
     
