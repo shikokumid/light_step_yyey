@@ -143,11 +143,16 @@ $wishlistCount = $wishStmt->fetchColumn();
                                     $status_class = 'status-pending';
                                     $status_text = 'Неизвестно';
                             }
-                            ?>
-                            <tr>
-                                <td><?= htmlspecialchars($order['order_id']) ?></td>
-                                <td><?= date('d.m.Y H:i', strtotime($order['order_date'])) ?></td>
-                                <!-- РЕАЛЬНАЯ ЦЕНА В РУБЛЯХ (total уже в рублях после исправления checkout/save_order) -->
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($order['order_id']) ?></td>
+                                   <td>
+                                <?=
+                                    !empty($order['order_date'])
+                                        ? date('d.m.Y H:i', strtotime($order['order_date']))
+                                        : '—'
+                                ?>
+                                </td>
                                 <td>₽<?= number_format($order['total'], 2, '.', ' ') ?></td>
                                 <td>
                                     <span class="order-status <?= $status_class ?>"><?= $status_text ?></span>
