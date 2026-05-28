@@ -48,7 +48,7 @@ if (!$item_found) {
 }
 
 // Сообщение об успехе
-$_SESSION['cart_success'] = 'Товар успешно добавлен в корзину!';
+$_SESSION['success'] = 'Товар успешно добавлен в корзину!';
 
 // Перенаправляем обратно на предыдущую страницу
 header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? 'index.php'));
