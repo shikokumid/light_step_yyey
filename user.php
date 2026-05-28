@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+date_default_timezone_set('Asia/Krasnoyarsk');
 // Проверяем авторизацию
 if (!isset($_COOKIE['login'])) {
     header('Location: account.php');
