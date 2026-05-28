@@ -17,37 +17,43 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $userStmt = $pdo->prepare("SELECT id FROM regisrtation WHERE NAME = ?");
 $userStmt->execute([$username]);
 $user = $userStmt->fetch();
+if (!$user) {
+    // Если пользователь не найден в БД, перенаправляем на страницу входа
+    header('Location: account.php');
+    exit;
+}
 $user_id = $user['id'];
 
-// Получаем количество товаров в избранном
+// Получаем количество товаров в избранном (для отображения в меню)
 $wishlistCountStmt = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?");
 $wishlistCountStmt->execute([$user_id]);
 $wishlistCount = $wishlistCountStmt->fetch()['count'];
 
-// ------------------ ДОБАВЛЕНО: подсчёт количества заказов ------------------
-$orderCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_login = ?");
-$orderCountStmt->execute([$username]);
-$orderCount = $orderCountStmt->fetchColumn();  // число заказов
-
-// Получаем последний заказ (дата) для отображения
-$lastOrderStmt = $pdo->prepare("SELECT order_date FROM orders WHERE user_login = ? ORDER BY order_date DESC LIMIT 1");
-$lastOrderStmt->execute([$username]);
-$lastOrder = $lastOrderStmt->fetch();
-// -------------------------------------------------------------------------
+// Получаем избранные товары
+$wishlistStmt = $pdo->prepare("
+    SELECT p.* 
+    FROM wishlist w 
+    JOIN products p ON w.product_id = p.id 
+    WHERE w.user_id = ? 
+    ORDER BY w.created_at DESC
+");
+$wishlistStmt->execute([$user_id]);
+$wishlistItems = $wishlistStmt->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кабинет пользователя - Легкий шаг</title>
+    <title>Избранное - Redstore</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+   
 </head>
 <body>
+    <!-- Шапка (navbar) -->
     <div class="header">
         <div class="container">
             <div class="navbar">
@@ -57,12 +63,12 @@ $lastOrder = $lastOrderStmt->fetch();
                 <nav>
                     <ul id="MenuItems">
                         <li><a href="index.php">Главная</a></li>
-                        <li><a href="products.php">Продукты</a></li>
+                        <li><a href="products.php">Товары</a></li>
                         <li><a href="about.php">О нас</a></li>
                         <li><a href="contact.php">Контакты</a></li>
-                        <?php
+                        <?php   
                         if(isset($_COOKIE['login'])) {
-                            echo '<li><a href="/user.php" class="active">Кабинет пользователя</a></li>';
+                            echo '<li><a href="user.php">Кабинет пользователя</a></li>';
                         } else {
                             echo '<li><a href="account.php">Аккаунт</a></li>';
                         }
@@ -80,100 +86,88 @@ $lastOrder = $lastOrderStmt->fetch();
         </div>
     </div>
 
+    <!-- Основной контейнер -->
     <div class="user-container">
         <div class="user-header">
             <div>
-                <h1 class="user-welcome">Добро пожаловать, <?php echo htmlspecialchars($username); ?>!</h1>
-                <p class="user-email">Управляйте своей учетной записью в Легком шаге</p>
+                <h1 class="user-welcome">Избранное</h1>
+                <p class="user-email">Сохраненные товары <?php echo htmlspecialchars($username); ?></p>
             </div>
-            <a href="logout.php" class="logout-btn">
-                <i class="fa fa-sign-out"></i> Выйти
+            <a href="user.php" class="logout-btn">
+                <i class="fa fa-arrow-left"></i> Назад в кабинет
             </a>
         </div>
-
+        
+        <!-- Меню пользователя (можно оставить как ссылки на другие разделы) -->
         <div class="user-menu">
-            <a href="user.php" class="user-menu-item active">
+            <a href="user.php" class="user-menu-item">
                 <i class="fa fa-user"></i> Профиль
             </a>
             <a href="user_orders.php" class="user-menu-item">
                 <i class="fa fa-shopping-bag"></i> Мои заказы
             </a>
-            <a href="wishlist.php" class="user-menu-item">
+            <a href="wishlist.php" class="user-menu-item active">
                 <i class="fa fa-heart"></i> Избранное
                 <?php if ($wishlistCount > 0): ?>
-                    <span class="wishlist-count"><?php echo $wishlistCount; ?></span>
+                    <span class="wishlist-count-badge"><?php echo $wishlistCount; ?></span>
                 <?php endif; ?>
             </a>
             <a href="user_settings.php" class="user-menu-item">
                 <i class="fa fa-cog"></i> Настройки
             </a>
         </div>
-
+        
+        <!-- Содержимое избранного -->
         <div class="user-content">
-            <h2 class="user-section-title">Личный кабинет</h2>
-
-            <div class="profile-info">
-                <div class="profile-card">
-                    <h3><i class="fa fa-user-circle"></i> Личная информация</h3>
-                    <p><strong>Имя пользователя:</strong> <?php echo htmlspecialchars($username); ?></p>
-                    <p><strong>Статус аккаунта:</strong> Активен</p>
-                    <p><strong>Дата регистрации:</strong> <?php echo date('d.m.Y'); ?></p>
-                    <!-- ИЗМЕНЕНО: динамическое количество заказов -->
-                    <p><strong>Количество заказов:</strong> <?php echo $orderCount; ?></p>
+            <h2 class="user-section-title">Избранные товары (<?php echo $wishlistCount; ?>)</h2>
+            
+            <?php if (count($wishlistItems) > 0): ?>
+                <div class="wishlist-grid">
+                    <?php foreach ($wishlistItems as $item): 
+                        // Очищаем цену от лишних символов, если необходимо
+                        $clean_price = floatval(preg_replace('/[^0-9.]/', '', $item['price']));
+                    ?>
+                        <div class="wishlist-item" data-product-id="<?php echo $item['id']; ?>">
+                            <a href="products-details.php?id=<?php echo $item['id']; ?>">
+                                <img src="images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['item']); ?>">
+                            </a>
+                            <div class="wishlist-item-content">
+                                <h3 class="wishlist-item-title">
+                                    <a href="products-details.php?id=<?php echo $item['id']; ?>" style="color: var(--text-dark); text-decoration: none;">
+                                        <?php echo htmlspecialchars($item['item']); ?>
+                                    </a>
+                                </h3>
+                                <div class="wishlist-item-price">₽<?php echo number_format($clean_price, 2); ?></div>
+                                <div class="wishlist-actions">
+                                    <button class="wishlist-add-cart-btn add-to-cart-from-wishlist" 
+                                            data-product-id="<?php echo $item['id']; ?>"
+                                            data-product-name="<?php echo htmlspecialchars($item['item']); ?>"
+                                            data-product-price="<?php echo $clean_price; ?>"
+                                            data-product-image="<?php echo htmlspecialchars($item['image']); ?>">
+                                        <i class="fa fa-shopping-cart"></i> В корзину
+                                    </button>
+                                    <button class="wishlist-remove-btn remove-from-wishlist" data-product-id="<?php echo $item['id']; ?>">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-
-                <div class="profile-card">
-                    <h3><i class="fa fa-shopping-cart"></i> Корзина и заказы</h3>
-                    <!-- ИЗМЕНЕНО: общее количество товаров в корзине (единиц) -->
-                    <p><strong>Товаров в корзине:</strong>
-                        <?php
-                            if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-                                echo array_sum(array_column($_SESSION['cart'], 'quantity'));
-                            } else {
-                                echo '0';
-                            }
-                        ?>
-                    </p>
-                    <p><strong>Товаров в избранном:</strong> <?php echo $wishlistCount; ?></p>
-                    <!-- ДОБАВЛЕНО: динамическое количество заказов и последний заказ -->
-                    <p><strong>Всего заказов:</strong> <?php echo $orderCount; ?></p>
-                    <p><strong>Последний заказ:</strong>
-                        <?php
-                            if ($lastOrder) {
-                                echo date('d.m.Y', strtotime($lastOrder['order_date']));
-                            } else {
-                                echo 'Нет заказов';
-                            }
-                        ?>
-                    </p>
-                </div>
-
-                <div class="profile-card">
-                    <h3><i class="fa fa-star"></i> Активность</h3>
-                    <p><strong>Статус покупателя:</strong> Новый клиент</p>
-                    <p><strong>Бонусные баллы:</strong> 0</p>
-                    <p><strong>Скидка:</strong> 0%</p>
-                    <p><strong>Рейтинг:</strong> ☆☆☆☆☆</p>
-                </div>
-            </div>
-
-            <div style="margin-top: 30px;">
-                <h3 style="color: var(--primary-color); margin-bottom: 15px;">Быстрые действия</h3>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="products.php" class="logout-btn" style="background-color: var(--primary-color);">
-                        <i class="fa fa-shopping-cart"></i> Продолжить покупки
-                    </a>
-                    <a href="cart.php" class="logout-btn" style="background-color: var(--light-accent); color: var(--text-dark);">
-                        <i class="fa fa-shopping-basket"></i> Перейти в корзину
-                    </a>
-                    <a href="wishlist.php" class="logout-btn" style="background-color: var(--light-accent); color: var(--text-dark);">
-                        <i class="fa fa-heart"></i> Перейти в избранное
+            <?php else: ?>
+                <div class="no-wishlist">
+                    <i class="fa fa-heart"></i>
+                    <h3>Ваш список избранного пуст</h3>
+                    <p>Добавляйте товары в избранное, чтобы не потерять их!</p>
+                    <a href="products.php" class="logout-btn" style="margin-top: 20px;">
+                        <i class="fa fa-shopping-cart"></i> Перейти к товарам
                     </a>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 
+    <!-- Подвал -->
     <div class="footer">
         <div class="container">
             <div class="row">
@@ -212,10 +206,13 @@ $lastOrder = $lastOrderStmt->fetch();
             <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
-
+    
+    <!-- Скрипты -->
     <script>
+        // Переключение мобильного меню
         var MenuItems = document.getElementById("MenuItems");
         MenuItems.style.maxHeight = "0px";
+        
         function menutoggle() {
             if (MenuItems.style.maxHeight == "0px") {
                 MenuItems.style.maxHeight = "200px";
@@ -223,26 +220,183 @@ $lastOrder = $lastOrderStmt->fetch();
                 MenuItems.style.maxHeight = "0px";
             }
         }
+        
+        // Удаление из избранного
+        document.querySelectorAll('.remove-from-wishlist').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const wishlistItem = this.closest('.wishlist-item');
+                
+                // Отправляем запрос на удаление
+                fetch('add_to_wishlist.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'product_id=' + productId
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data === 'removed') {
+                        // Удаляем элемент из DOM
+                        wishlistItem.style.opacity = '0';
+                        wishlistItem.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            wishlistItem.remove();
+                            // Обновляем счетчик избранного и заголовок
+                            updateWishlistCount();
+                        }, 300);
+                    } else if (data === 'not_logged_in') {
+                        alert('Пожалуйста, войдите в систему');
+                        window.location.href = 'account.php';
+                    } else {
+                        showMessage('Ошибка при удалении', 'error');
+                    }
+                });
+            });
+        });
+        
+        // Добавление в корзину из избранного
+        document.querySelectorAll('.add-to-cart-from-wishlist').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const productName = this.getAttribute('data-product-name');
+                const productPrice = this.getAttribute('data-product-price');
+                const productImage = this.getAttribute('data-product-image');
+                
+                // Отправляем запрос на добавление в корзину
+                fetch('add_to_cart.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `product_id=${productId}&product_name=${encodeURIComponent(productName)}&product_price=${productPrice}&product_image=${encodeURIComponent(productImage)}`
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data === 'success') {
+                        showMessage('Товар добавлен в корзину!', 'success');
+                        // Обновляем счетчик корзины в шапке
+                        updateCartCount();
+                    } else {
+                        showMessage('Товар добавлен в корзину!', 'error');
+                    }
+                });
+            });
+        });
+        
+        // Функция обновления счетчика избранного
+        function updateWishlistCount() {
+            const wishlistCountElement = document.querySelector('.wishlist-count-badge');
+            const currentCount = parseInt(wishlistCountElement ? wishlistCountElement.textContent : 0);
+            const newCount = Math.max(0, currentCount - 1);
+            
+            if (wishlistCountElement) {
+                if (newCount > 0) {
+                    wishlistCountElement.textContent = newCount;
+                } else {
+                    wishlistCountElement.remove();
+                }
+            }
+            
+            // Обновляем заголовок
+            const wishlistTitle = document.querySelector('.user-section-title');
+            if (wishlistTitle) {
+                const match = wishlistTitle.textContent.match(/(\d+)/);
+                if (match) {
+                    wishlistTitle.textContent = wishlistTitle.textContent.replace(match[0], newCount);
+                }
+            }
+            
+            // Если товаров не осталось, показываем сообщение
+            if (newCount === 0) {
+                const wishlistGrid = document.querySelector('.wishlist-grid');
+                if (wishlistGrid) {
+                    wishlistGrid.innerHTML = `
+                        <div class="no-wishlist" style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                            <i class="fa fa-heart"></i>
+                            <h3>Ваш список избранного пуст</h3>
+                            <p>Добавляйте товары в избранное, чтобы не потерять их!</p>
+                            <a href="products.php" class="logout-btn" style="margin-top: 20px;">
+                                <i class="fa fa-shopping-cart"></i> Перейти к товарам
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Функция обновления счетчика корзины
         function updateCartCount() {
             fetch('get_cart_count.php')
                 .then(response => response.text())
                 .then(count => {
-                    const cartCountSpan = document.querySelector('.cart-count');
+                    const cartCountElement = document.querySelector('.cart-count');
                     if (parseInt(count) > 0) {
-                        if (cartCountSpan) {
-                            cartCountSpan.textContent = count;
+                        if (cartCountElement) {
+                            cartCountElement.textContent = count;
                         } else {
                             const cartLink = document.querySelector('.cart-link');
-                            const newSpan = document.createElement('span');
-                            newSpan.className = 'cart-count';
-                            newSpan.textContent = count;
-                            cartLink.appendChild(newSpan);
+                            if (cartLink) {
+                                const countSpan = document.createElement('span');
+                                countSpan.className = 'cart-count';
+                                countSpan.textContent = count;
+                                cartLink.appendChild(countSpan);
+                            }
                         }
                     } else {
-                        if (cartCountSpan) cartCountSpan.remove();
+                        if (cartCountElement) {
+                            cartCountElement.remove();
+                        }
                     }
                 });
         }
+        
+
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = 'cart-message';
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                background-color: green;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.4s ease, fadeOut 0.4s 2.5s forwards;
+                border: 1px solid #e0e0e0;
+            `;
+
+            if (type === 'success') {
+                message.style.color = '#2e7d32';   
+                message.style.borderLeft = '4px solid #2e7d32';
+            } else {
+                message.style.color = '#ffffff';  
+                message.style.borderLeft = '4px solid #c62828';
+            }
+
+    message.textContent = text;
+    document.body.appendChild(message);
+
+    setTimeout(() => {
+        message.remove();
+    }, 3000);
+}
     </script>
+    
+    <!-- Стили для анимации сообщений -->
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
 </body>
 </html>
