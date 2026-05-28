@@ -219,8 +219,7 @@ $order_date = date('Y-m-d H:i:s');
         function processPayment() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
             const orderId = "<?php echo $order_id; ?>";
-            const totalAmount = "<?php echo number_format($total, 2); ?>";
-            
+            const totalAmount = "<?= $total ?>";            
             // Отправляем данные на сервер для сохранения заказа
             fetch('save_order.php', {
                 method: 'POST',
