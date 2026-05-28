@@ -22,8 +22,8 @@ session_start();
 	}
 
 	.col-4 img {
-	    width: 260px;
-	    height: 180px;
+	    width: 317px;
+	    height: 260px;
 	    object-fit: cover;
 	    border-radius: 8px;
 	    display: block;
