@@ -2,6 +2,7 @@
 // save_order.php
 session_start();
 
+date_default_timezone_set('Asia/Krasnoyarsk');
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo 'invalid_request';
