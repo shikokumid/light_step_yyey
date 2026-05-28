@@ -353,7 +353,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'profile';
                 </div>
             </div>
             <hr>
-            <p class="copyright">© 2023 Легкий Шаг. Все права защищены.</p>
+            <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
 
