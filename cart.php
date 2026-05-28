@@ -12,7 +12,7 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Корзина - RedStore</title>
+    <title>Корзина - Легкий шаг</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -172,7 +172,7 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             </div>
             
             <hr><!-- горизонтальная линия -->
-            <p class="copyright">Авторские права 2021 - Apurba Kr. Pramanik</p>
+            <p class="copyright">>© 2026 Легкий Шаг. Все права защищены.</p>
             
         </div>
     </div>
