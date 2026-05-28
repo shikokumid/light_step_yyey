@@ -30,8 +30,14 @@ $pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306'
 
 // Сохраняем заказ в базу данных
 try {
-    $sql = "INSERT INTO orders (order_id, user_login, total, payment_method, status) 
-            VALUES (?, ?, ?, ?, 'pending')";
+    $sql = "INSERT INTO orders (
+        order_id,
+        user_login,
+        total,
+        payment_method,
+        status,
+        order_date
+    ) VALUES (?, ?, ?, ?, 'pending', NOW())";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$order_id, $user_login, $total, $payment_method]);
     
