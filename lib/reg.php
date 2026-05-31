@@ -18,29 +18,19 @@ if (strlen($password) < 6) {
     exit('Пароль должен содержать минимум 6 символов');
 }
 
-try {
+$pdo = new PDO(
+    'mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306',
+    'root',
+    'zUuofgBLCodqyylBPVacalWLUzyDmyhs'
+);
 
-    $pdo = new PDO(
-        'mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306',
-        'root',
-        'zUuofgBLCodqyylBPVacalWLUzyDmyhs'
-    );
-
-    $pdo->setAttribute(
-        PDO::ATTR_ERRMODE,
-        PDO::ERRMODE_EXCEPTION
-    );
-
-} catch (PDOException $e) {
-
-    exit(
-        'Ошибка подключения к базе: ' .
-        $e->getMessage()
-    );
-}
+$pdo->setAttribute(
+    PDO::ATTR_ERRMODE,
+    PDO::ERRMODE_EXCEPTION
+);
 
 /*
-Проверка на существующий аккаунт
+Проверяем существование email
 */
 
 $stmt = $pdo->prepare(
@@ -57,7 +47,7 @@ if ($stmt->fetch()) {
 }
 
 /*
-Хеширование пароля
+Хешируем пароль
 */
 
 $passwordHash = password_hash(
@@ -66,7 +56,7 @@ $passwordHash = password_hash(
 );
 
 /*
-Сохранение пользователя
+Сохраняем пользователя
 */
 
 $stmt = $pdo->prepare(
@@ -82,57 +72,61 @@ $stmt->execute([
 ]);
 
 /*
-Отправка письма через Resend API
+Mailtrap API
 */
 
-$resendApiKey = 'ad3761584bcccef40910d3716d8069ef';
+$apiKey = 'ad3761584bcccef40910d3716d8069ef';
 
-$emailData = [
-    'from' => 'onboarding@resend.dev',
-    'to' => [$email],
+$data = [
+    'from' => [
+        'email' => 'hello@demomailtrap.co',
+        'name' => 'Легкий Шаг'
+    ],
+    'to' => [
+        [
+            'email' => $email
+        ]
+    ],
     'subject' => 'Добро пожаловать в Легкий Шаг',
-    'html' => "
-        <h2>Здравствуйте, {$login}!</h2>
-
-        <p>
-            Вы успешно зарегистрировались
-            в интернет-магазине «Легкий Шаг».
-        </p>
-
-        <p>
-            Спасибо за регистрацию ❤️
-        </p>
-
-        <p>
-            Теперь вы можете войти
-            в личный кабинет и оформлять заказы.
-        </p>
-    "
+    'text' =>
+        "Здравствуйте, {$login}!\n\n" .
+        "Вы успешно зарегистрировались в интернет-магазине «Легкий Шаг».\n\n" .
+        "Спасибо за регистрацию!"
 ];
 
 $ch = curl_init();
 
-curl_setopt_array($ch, [
-    CURLOPT_URL => 'https://api.resend.com/emails',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => json_encode($emailData),
-    CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer ' . $resendApiKey,
+curl_setopt($ch, CURLOPT_URL, 'https://send.api.mailtrap.io/api/send');
+curl_setopt($ch, CURLOPT_POST, true);
+
+curl_setopt(
+    $ch,
+    CURLOPT_HTTPHEADER,
+    [
+        'Authorization: Bearer ' . $apiKey,
         'Content-Type: application/json'
     ]
-]);
+);
+
+curl_setopt(
+    $ch,
+    CURLOPT_POSTFIELDS,
+    json_encode($data)
+);
+
+curl_setopt(
+    $ch,
+    CURLOPT_RETURNTRANSFER,
+    true
+);
 
 $response = curl_exec($ch);
 
+if ($response === false) {
+    error_log(curl_error($ch));
+}
+
 curl_close($ch);
 
-/*
-Редирект
-*/
-
 header('Location: /account.php');
-
 exit;
-
-?>
