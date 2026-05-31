@@ -43,9 +43,15 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 </nav>
                 <a href="cart.php" class="cart-link">
                     <img src="images/cart.png" width="30px" height="30px">
-                    <?php if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                        <span class="cart-count"><?php echo count($_SESSION['cart']); ?></span>
-                    <?php endif; ?>
+                        <?php
+                        $totalCartItems = 0;
+                        if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+                            $totalCartItems = array_sum(array_column($_SESSION['cart'], 'quantity'));
+                        }
+                        ?>
+                        <?php if ($totalCartItems > 0): ?>
+                        <span class="cart-count"><?php echo $totalCartItems; ?></span>
+                        <?php endif; ?>
                 </a>
                 <img src="images/menu.png" class="menu-icon" onClick="menutoggle()">
             </div>
