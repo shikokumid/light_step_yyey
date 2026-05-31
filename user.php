@@ -1,8 +1,8 @@
 <?php
 session_start();
-date_default_timezone_set('Asia/Krasnoyarsk');
 
-// Проверка авторизации
+date_default_timezone_set('Asia/Krasnoyarsk');
+// Проверяем авторизацию
 if (!isset($_COOKIE['login'])) {
     header('Location: account.php');
     exit;
@@ -10,215 +10,242 @@ if (!isset($_COOKIE['login'])) {
 
 $username = $_COOKIE['login'];
 
-// Подключение к БД
-try {
-    $pdo = new PDO(
-        'mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306',
-        'root',
-        'zUuofgBLCodqyylBPVacalWLUzyDmyhs'
-    );
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die('Ошибка подключения к базе данных: ' . $e->getMessage());
-}
+// Подключение к базе данных
+$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// Создаём таблицы, если их нет (безопасно)
-try {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS wishlist (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        product_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS orders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id VARCHAR(20) NOT NULL UNIQUE,
-        user_login VARCHAR(50) NOT NULL,
-        total DECIMAL(10,2) NOT NULL,
-        status VARCHAR(20) DEFAULT 'pending',
-        payment_method VARCHAR(50),
-        order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-} catch (PDOException $e) {
-    die('Ошибка создания таблиц: ' . $e->getMessage());
-}
-
-// Получаем данные пользователя
-$userStmt = $pdo->prepare("SELECT id, NAME FROM regisrtation WHERE NAME = ? LIMIT 1");
+// Получаем ID пользователя
+$userStmt = $pdo->prepare("SELECT id FROM regisrtation WHERE NAME = ?");
 $userStmt->execute([$username]);
-$user = $userStmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$user) {
-    setcookie('login', '', time() - 3600, '/');
-    header('Location: account.php');
-    exit;
-}
-
+$user = $userStmt->fetch();
 $user_id = $user['id'];
-$isAdmin = ($username === 'admin');
 
-// Избранное
-try {
-    $wishlistStmt = $pdo->prepare("SELECT COUNT(*) FROM wishlist WHERE user_id = ?");
-    $wishlistStmt->execute([$user_id]);
-    $wishlistCount = $wishlistStmt->fetchColumn();
-} catch (PDOException $e) {
-    $wishlistCount = 0;
-}
+// Получаем количество товаров в избранном
+$wishlistCountStmt = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?");
+$wishlistCountStmt->execute([$user_id]);
+$wishlistCount = $wishlistCountStmt->fetch()['count'];
 
-// Заказы пользователя
-try {
-    $orderCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_login = ?");
-    $orderCountStmt->execute([$username]);
-    $orderCount = $orderCountStmt->fetchColumn();
+// ------------------ ДОБАВЛЕНО: подсчёт количества заказов ------------------
+$orderCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_login = ?");
+$orderCountStmt->execute([$username]);
+$orderCount = $orderCountStmt->fetchColumn();  // число заказов
 
-    $lastOrderStmt = $pdo->prepare("SELECT order_date FROM orders WHERE user_login = ? ORDER BY order_date DESC LIMIT 1");
-    $lastOrderStmt->execute([$username]);
-    $lastOrder = $lastOrderStmt->fetch(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $orderCount = 0;
-    $lastOrder = null;
-}
-
-// Админ-статистика
-if ($isAdmin) {
-    $usersCount = $pdo->query("SELECT COUNT(*) FROM regisrtation")->fetchColumn();
-    $productsCount = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-    $ordersCount = $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-    $revenue = $pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE status != 'cancelled'")->fetchColumn();
-    $recentOrders = $pdo->query("SELECT * FROM orders ORDER BY order_date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
-}
+// Получаем последний заказ (дата) для отображения
+$lastOrderStmt = $pdo->prepare("SELECT order_date FROM orders WHERE user_login = ? ORDER BY order_date DESC LIMIT 1");
+$lastOrderStmt->execute([$username]);
+$lastOrder = $lastOrderStmt->fetch();
+// -------------------------------------------------------------------------
 ?>
+
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Личный кабинет | Легкий Шаг</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-    .admin-panel {
-        background: #f9f9f9;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-    }
-    .admin-stats {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-    .admin-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        text-align: center;
-        flex: 1 1 200px;
-    }
-    .admin-card i {
-        font-size: 28px;
-        color: #ff523b;
-        margin-bottom: 10px;
-    }
-    .profile-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-top: 20px;
-    }
-    .user-menu {
-        display: flex;
-        gap: 15px;
-        margin: 20px 0;
-    }
-    .user-menu a {
-        background: #ff523b;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: 600;
-    }
-    .user-menu a:hover {
-        background: #e8432e;
-    }
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет пользователя - Легкий шаг</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-
-<div class="user-container">
-
-    <div class="user-header">
-        <h1>Добро пожаловать, <?= htmlspecialchars($username) ?> 👋</h1>
-        <a href="logout.php" class="logout-btn">Выйти</a>
-    </div>
-
-    <!-- Меню кабинета -->
-    <div class="user-menu">
-        <a href="user.php">Профиль</a>
-        <a href="user_orders.php">Мои заказы</a>
-        <a href="wishlist.php">Избранное (<?= $wishlistCount ?>)</a>
-        <a href="user_settings.php">Настройки</a>
-    </div>
-
-    <?php if ($isAdmin): ?>
-    <div class="admin-panel">
-        <h2>Панель администратора</h2>
-        <div class="admin-stats">
-            <div class="admin-card">
-                <i class="fa fa-users"></i>
-                <h3><?= $usersCount ?></h3>
-                <p>Пользователей</p>
-            </div>
-            <div class="admin-card">
-                <i class="fa fa-shopping-bag"></i>
-                <h3><?= $productsCount ?></h3>
-                <p>Товаров</p>
-            </div>
-            <div class="admin-card">
-                <i class="fa fa-shopping-cart"></i>
-                <h3><?= $ordersCount ?></h3>
-                <p>Заказов</p>
-            </div>
-            <div class="admin-card">
-                <i class="fa fa-rub"></i>
-                <h3><?= number_format($revenue, 0, '.', ' ') ?> ₽</h3>
-                <p>Выручка</p>
+    <div class="header">
+        <div class="container">
+            <div class="navbar">
+                <div class="logo">
+                    <a href="index.php"><img src="images/logot.png" width="125px"></a>
+                </div>
+                <nav>
+                    <ul id="MenuItems">
+                        <li><a href="index.php">Главная</a></li>
+                        <li><a href="products.php">Продукты</a></li>
+                        <li><a href="about.php">О нас</a></li>
+                        <li><a href="contact.php">Контакты</a></li>
+                        <?php
+                        if(isset($_COOKIE['login'])) {
+                            echo '<li><a href="/user.php" class="active">Кабинет пользователя</a></li>';
+                        } else {
+                            echo '<li><a href="account.php">Аккаунт</a></li>';
+                        }
+                        ?>
+                    </ul>
+                </nav>
+                <a href="cart.php" class="cart-link">
+                    <img src="images/cart.png" width="30px" height="30px">
+                    <?php if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                        <span class="cart-count"><?php echo array_sum(array_column($_SESSION['cart'], 'quantity')); ?></span>
+                    <?php endif; ?>
+                </a>
+                <img src="images/menu.png" class="menu-icon" onClick="menutoggle()">
             </div>
         </div>
-
-        <div class="profile-card">
-            <h3>Последние заказы</h3>
-            <?php foreach ($recentOrders as $order): ?>
-                <p>
-                    #<?= $order['order_id'] ?>
-                    — <?= htmlspecialchars($order['user_login']) ?>
-                    — <?= number_format($order['total'], 0, '.', ' ') ?> ₽
-                </p>
-            <?php endforeach; ?>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <div class="profile-info">
-        <div class="profile-card">
-            <h3>Личная информация</h3>
-            <p><strong>Имя:</strong> <?= htmlspecialchars($username) ?></p>
-            <p><strong>Избранное:</strong> <?= $wishlistCount ?></p>
-            <p><strong>Заказов:</strong> <?= $orderCount ?></p>
-            <p><strong>Последний заказ:</strong>
-                <?= $lastOrder
-                    ? date('d.m.Y H:i', strtotime($lastOrder['order_date']))
-                    : 'Нет заказов'
-                ?>
-            </p>
-        </div>
     </div>
 
-</div>
+    <div class="user-container">
+        <div class="user-header">
+            <div>
+                <h1 class="user-welcome">Добро пожаловать, <?php echo htmlspecialchars($username); ?>!</h1>
+                <p class="user-email">Управляйте своей учетной записью в Легком шаге</p>
+            </div>
+            <a href="logout.php" class="logout-btn">
+                <i class="fa fa-sign-out"></i> Выйти
+            </a>
+        </div>
 
+        <div class="user-menu">
+            <a href="user.php" class="user-menu-item active">
+                <i class="fa fa-user"></i> Профиль
+            </a>
+            <a href="user_orders.php" class="user-menu-item">
+                <i class="fa fa-shopping-bag"></i> Мои заказы
+            </a>
+            <a href="wishlist.php" class="user-menu-item">
+                <i class="fa fa-heart"></i> Избранное
+                <?php if ($wishlistCount > 0): ?>
+                    <span class="wishlist-count"><?php echo $wishlistCount; ?></span>
+                <?php endif; ?>
+            </a>
+            <a href="user_settings.php" class="user-menu-item">
+                <i class="fa fa-cog"></i> Настройки
+            </a>
+        </div>
+
+        <div class="user-content">
+            <h2 class="user-section-title">Личный кабинет</h2>
+
+            <div class="profile-info">
+                <div class="profile-card">
+                    <h3><i class="fa fa-user-circle"></i> Личная информация</h3>
+                    <p><strong>Имя пользователя:</strong> <?php echo htmlspecialchars($username); ?></p>
+                    <p><strong>Статус аккаунта:</strong> Активен</p>
+                    <p><strong>Дата регистрации:</strong> <?php echo date('d.m.Y'); ?></p>
+                    <!-- ИЗМЕНЕНО: динамическое количество заказов -->
+                    <p><strong>Количество заказов:</strong> <?php echo $orderCount; ?></p>
+                </div>
+
+                <div class="profile-card">
+                    <h3><i class="fa fa-shopping-cart"></i> Корзина и заказы</h3>
+                    <!-- ИЗМЕНЕНО: общее количество товаров в корзине (единиц) -->
+                    <p><strong>Товаров в корзине:</strong>
+                        <?php
+                            if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+                                echo array_sum(array_column($_SESSION['cart'], 'quantity'));
+                            } else {
+                                echo '0';
+                            }
+                        ?>
+                    </p>
+                    <p><strong>Товаров в избранном:</strong> <?php echo $wishlistCount; ?></p>
+                    <!-- ДОБАВЛЕНО: динамическое количество заказов и последний заказ -->
+                    <p><strong>Всего заказов:</strong> <?php echo $orderCount; ?></p>
+                    <p><strong>Последний заказ:</strong>
+                        <?php
+                            if ($lastOrder) {
+                                echo date('d.m.Y', strtotime($lastOrder['order_date']));
+                            } else {
+                                echo 'Нет заказов';
+                            }
+                        ?>
+                    </p>
+                </div>
+
+                <div class="profile-card">
+                    <h3><i class="fa fa-star"></i> Активность</h3>
+                    <p><strong>Статус покупателя:</strong> Новый клиент</p>
+                    <p><strong>Бонусные баллы:</strong> 0</p>
+                    <p><strong>Скидка:</strong> 0%</p>
+                    <p><strong>Рейтинг:</strong> ☆☆☆☆☆</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: var(--primary-color); margin-bottom: 15px;">Быстрые действия</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <a href="products.php" class="logout-btn" style="background-color: var(--primary-color);">
+                        <i class="fa fa-shopping-cart"></i> Продолжить покупки
+                    </a>
+                    <a href="cart.php" class="logout-btn" style="background-color: var(--light-accent); color: var(--text-dark);">
+                        <i class="fa fa-shopping-basket"></i> Перейти в корзину
+                    </a>
+                    <a href="wishlist.php" class="logout-btn" style="background-color: var(--light-accent); color: var(--text-dark);">
+                        <i class="fa fa-heart"></i> Перейти в избранное
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col-1">
+                    <h3>Скачайте наше приложение</h3>
+                    <p>Скачайте приложение для Android и iOS.</p>
+                    <div class="app-logo">
+                        <img src="images/play-store.png" alt="">
+                        <img src="images/app-store.png" alt="">
+                    </div>
+                </div>
+                <div class="footer-col-2">
+                    <img src="images/logoi.png">
+                    <p>Наша цель — сделать спорт доступным для всех.</p>
+                </div>
+                <div class="footer-col-3">
+                    <h3>Полезные ссылки</h3>
+                    <ul>
+                        <li>Купоны</li>
+                        <li>Блог</li>
+                        <li>Политика возврата</li>
+                        <li>Присоединяйтесь к партнёрской программе</li>
+                    </ul>
+                </div>
+                <div class="footer-col-4">
+                    <h3>Следите за нами</h3>
+                    <ul>
+                        <li><a href="https://web.telegram.org"><i class="fa fa-telegram"></i> Telegram</a></li>
+                        <li><a href="https://m.vk.com/"><i class="fa fa-vk"></i> Вконтакте</a></li>
+                        <li><a href="https://max.ru/"><i class="fa fa-max"></i> Max</a></li>
+                        <li><a href="https://www.youtube.com/"><i class="fa fa-youtube"></i> YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
+        </div>
+    </div>
+
+    <script>
+        var MenuItems = document.getElementById("MenuItems");
+        MenuItems.style.maxHeight = "0px";
+        function menutoggle() {
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px";
+            } else {
+                MenuItems.style.maxHeight = "0px";
+            }
+        }
+        function updateCartCount() {
+            fetch('get_cart_count.php')
+                .then(response => response.text())
+                .then(count => {
+                    const cartCountSpan = document.querySelector('.cart-count');
+                    if (parseInt(count) > 0) {
+                        if (cartCountSpan) {
+                            cartCountSpan.textContent = count;
+                        } else {
+                            const cartLink = document.querySelector('.cart-link');
+                            const newSpan = document.createElement('span');
+                            newSpan.className = 'cart-count';
+                            newSpan.textContent = count;
+                            cartLink.appendChild(newSpan);
+                        }
+                    } else {
+                        if (cartCountSpan) cartCountSpan.remove();
+                    }
+                });
+        }
+    </script>
 </body>
 </html>
+
+что здесь не так, перепиши код правильно бро пж
