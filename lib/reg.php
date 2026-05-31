@@ -1,25 +1,13 @@
 <?php
 
-session_start();
-
-
-// Подключаем PHPMailer вручную
-
-require_once dirname(__DIR__) . '/PHPMailer-master/src/Exception.php';
-require_once dirname(__DIR__) . '/PHPMailer-master/src/PHPMailer.php';
-require_once dirname(__DIR__) . '/PHPMailer-master/src/SMTP.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Получаем данные формы
+date_default_timezone_set('Asia/Krasnoyarsk');
 
 $login = trim($_POST['login'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if (strlen($login) < 2) {
-    exit('Логин слишком короткий');
+    exit('Логин должен содержать минимум 2 символа');
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -27,16 +15,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 if (strlen($password) < 6) {
-    exit('Пароль должен быть не менее 6 символов');
+    exit('Пароль должен содержать минимум 6 символов');
 }
 
-// hash password
-$passwordHash = password_hash(
-    $password,
-    PASSWORD_DEFAULT
-);
-
-// connect db
 try {
 
     $pdo = new PDO(
@@ -50,41 +31,48 @@ try {
         PDO::ERRMODE_EXCEPTION
     );
 
-} catch(PDOException $e) {
+} catch (PDOException $e) {
 
-    die(
+    exit(
         'Ошибка подключения к базе: ' .
         $e->getMessage()
     );
 }
 
 /*
-Проверяем email
+Проверка на существующий аккаунт
 */
-$check = $pdo->prepare(
+
+$stmt = $pdo->prepare(
     "SELECT id
      FROM regisrtation
      WHERE MAIL = ?
      LIMIT 1"
 );
 
-$check->execute([$email]);
+$stmt->execute([$email]);
 
-if ($check->fetch()) {
-    exit(
-        'Пользователь с таким email уже существует'
-    );
+if ($stmt->fetch()) {
+    exit('Пользователь с таким email уже зарегистрирован');
 }
 
 /*
-Сохраняем пользователя
+Хеширование пароля
 */
+
+$passwordHash = password_hash(
+    $password,
+    PASSWORD_DEFAULT
+);
+
+/*
+Сохранение пользователя
+*/
+
 $stmt = $pdo->prepare(
-    "INSERT INTO regisrtation (
-        NAME,
-        MAIL,
-        PASSWORD
-    ) VALUES (?, ?, ?)"
+    "INSERT INTO regisrtation
+    (NAME, MAIL, PASSWORD)
+    VALUES (?, ?, ?)"
 );
 
 $stmt->execute([
@@ -94,45 +82,16 @@ $stmt->execute([
 ]);
 
 /*
-Отправляем письмо
+Отправка письма через Resend API
 */
-$mail = new PHPMailer(true);
 
-try {
+$resendApiKey = 'ad3761584bcccef40910d3716d8069ef';
 
-    $mail->isSMTP();
-
-    $mail->Host = 'smtp.gmail.com';
-
-    $mail->SMTPAuth = true;
-
-    $mail->Username = 'your-email@gmail.com';
-
-    $mail->Password = 'your-app-password';
-
-    $mail->SMTPSecure =
-        PHPMailer::ENCRYPTION_STARTTLS;
-
-    $mail->Port = 587;
-
-    $mail->CharSet = 'UTF-8';
-
-    $mail->setFrom(
-        'your-email@gmail.com',
-        'Легкий Шаг'
-    );
-
-    $mail->addAddress(
-        $email,
-        $login
-    );
-
-    $mail->isHTML(true);
-
-    $mail->Subject =
-        'Добро пожаловать в Легкий Шаг';
-
-    $mail->Body = "
+$emailData = [
+    'from' => 'onboarding@resend.dev',
+    'to' => [$email],
+    'subject' => 'Добро пожаловать в Легкий Шаг',
+    'html' => "
         <h2>Здравствуйте, {$login}!</h2>
 
         <p>
@@ -141,26 +100,39 @@ try {
         </p>
 
         <p>
-            Теперь вы можете войти
-            в личный кабинет и оформлять заказы.
+            Спасибо за регистрацию ❤️
         </p>
 
         <p>
-            С уважением,<br>
-            команда «Легкий Шаг»
+            Теперь вы можете войти
+            в личный кабинет и оформлять заказы.
         </p>
-    ";
+    "
+];
 
-    $mail->send();
+$ch = curl_init();
 
-} catch (Exception $e) {
+curl_setopt_array($ch, [
+    CURLOPT_URL => 'https://api.resend.com/emails',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($emailData),
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . $resendApiKey,
+        'Content-Type: application/json'
+    ]
+]);
 
-    die($mail->ErrorInfo);
-}
+$response = curl_exec($ch);
+
+curl_close($ch);
 
 /*
 Редирект
 */
+
 header('Location: /account.php');
 
 exit;
+
+?>
