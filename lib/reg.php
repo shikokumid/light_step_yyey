@@ -5,9 +5,9 @@ session_start();
 
 // Подключаем PHPMailer вручную
 
-require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
-require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
-require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
+require_once dirname(__DIR__) . '/PHPMailer-master/src/Exception.php';
+require_once dirname(__DIR__) . '/PHPMailer-master/src/PHPMailer.php';
+require_once dirname(__DIR__) . '/PHPMailer-master/src/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
