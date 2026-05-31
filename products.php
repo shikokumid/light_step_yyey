@@ -1,29 +1,95 @@
 <?php
 session_start();
 
-// Подключение к БД
-$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
- $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo = new PDO(
+    'mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306',
+    'root',
+    'zUuofgBLCodqyylBPVacalWLUzyDmyhs'
+);
 
-// Получаем все товары
-$stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+/*
+Сортировка
+*/
+
+$sort = $_GET['sort'] ?? 'new';
+
+switch ($sort) {
+
+    case 'price_asc':
+        $sql = "
+            SELECT *
+            FROM products
+            ORDER BY price ASC
+        ";
+        break;
+
+    case 'price_desc':
+        $sql = "
+            SELECT *
+            FROM products
+            ORDER BY price DESC
+        ";
+        break;
+
+    case 'rating':
+        $sql = "
+            SELECT *
+            FROM products
+            ORDER BY rating DESC
+        ";
+        break;
+
+    case 'popular':
+        $sql = "
+            SELECT *
+            FROM products
+            ORDER BY views DESC
+        ";
+        break;
+
+    default:
+        $sql = "
+            SELECT *
+            FROM products
+            ORDER BY id DESC
+        ";
+}
+
+$stmt = $pdo->query($sql);
+
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Если пользователь авторизован, получим список его избранных товаров
+// добавляем в вишлист
 $wishlist_ids = [];
+
 if (isset($_COOKIE['login'])) {
+
     $username = $_COOKIE['login'];
-    $userStmt = $pdo->prepare("SELECT id FROM regisrtation WHERE NAME = ?");
+
+    $userStmt = $pdo->prepare("
+        SELECT id
+        FROM regisrtation
+        WHERE NAME = ?
+    ");
+
     $userStmt->execute([$username]);
-    $user = $userStmt->fetch();
+
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
     if ($user) {
-        $user_id = $user['id'];
-        $wishStmt = $pdo->prepare("SELECT product_id FROM wishlist WHERE user_id = ?");
-        $wishStmt->execute([$user_id]);
+
+        $wishStmt = $pdo->prepare("
+            SELECT product_id
+            FROM wishlist
+            WHERE user_id = ?
+        ");
+
+        $wishStmt->execute([$user['id']]);
+
         $wishlist_ids = $wishStmt->fetchAll(PDO::FETCH_COLUMN);
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -75,13 +141,29 @@ if (isset($_COOKIE['login'])) {
     <div class="small-container">
         <div class="row row-2">
             <h2>Все товары</h2>
-            <select id = "port">
-                <option value = "price_um">По умолчанию</option>
-                <option value = "prices">По цене</option>
-                <option value = "popular">По популярности</option>
-                <option value = "rating">По рейтингу</option>
-                <option value = "resell">По распродаже</option>
-            </select>
+             <select id="sortSelect" onchange="changeSort(this.value)">
+             
+                <option value="new" <?= $sort == 'new' ? 'selected' : '' ?>>
+                Новинки
+                </option>
+                
+                <option value="price_asc" <?= $sort == 'price_asc' ? 'selected' : '' ?>>
+                Сначала дешевле
+                </option>
+                
+                <option value="price_desc" <?= $sort == 'price_desc' ? 'selected' : '' ?>>
+                Сначала дороже
+                </option>
+                
+                <option value="popular" <?= $sort == 'popular' ? 'selected' : '' ?>>
+                По популярности
+                </option>
+                
+                <option value="rating" <?= $sort == 'rating' ? 'selected' : '' ?>>
+                По рейтингу
+                </option>
+             
+             </select>
         </div>
 
         <!-- Динамический вывод товаров -->
@@ -207,7 +289,13 @@ if (isset($_COOKIE['login'])) {
 </body>
 
 </html>
+<script>
+ function changeSort(value) {
+     window.location.href = 'products.php?sort=' + value;
+ }
+</script>
     <script>
+     
         // Переключение мобильного меню
         var MenuItems = document.getElementById("MenuItems");
         MenuItems.style.maxHeight = "0px";
