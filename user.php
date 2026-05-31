@@ -247,5 +247,3 @@ $lastOrder = $lastOrderStmt->fetch();
     </script>
 </body>
 </html>
-
-что здесь не так, перепиши код правильно бро пж
