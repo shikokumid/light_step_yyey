@@ -2,26 +2,22 @@
 
 session_start();
 
-/*
-Подключаем PHPMailer вручную
-*/
-require_once __DIR__ . '/../PHPMailer/src/Exception.php';
-require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
+
+// Подключаем PHPMailer вручную
+
+require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
+require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
+require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-/*
-Получаем данные формы
-*/
+// Получаем данные формы
+
 $login = trim($_POST['login'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
-/*
-Проверка
-*/
 if (strlen($login) < 2) {
     exit('Логин слишком короткий');
 }
@@ -34,17 +30,13 @@ if (strlen($password) < 6) {
     exit('Пароль должен быть не менее 6 символов');
 }
 
-/*
-Хэшируем пароль
-*/
+// hash password
 $passwordHash = password_hash(
     $password,
     PASSWORD_DEFAULT
 );
 
-/*
-Подключение к БД
-*/
+// connect db
 try {
 
     $pdo = new PDO(
