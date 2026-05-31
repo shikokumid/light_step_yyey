@@ -1,12 +1,29 @@
 <?php
+
+session_start();
+
+/*
+Подключаем PHPMailer вручную
+*/
+require_once __DIR__ . '/../PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
+/*
+Получаем данные формы
+*/
 $login = trim($_POST['login'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
+/*
+Проверка
+*/
 if (strlen($login) < 2) {
-    exit('Логин должен содержать минимум 2 символа');
+    exit('Логин слишком короткий');
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -14,14 +31,20 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 if (strlen($password) < 6) {
-    exit('Пароль должен содержать минимум 6 символов');
+    exit('Пароль должен быть не менее 6 символов');
 }
 
+/*
+Хэшируем пароль
+*/
 $passwordHash = password_hash(
     $password,
     PASSWORD_DEFAULT
 );
 
+/*
+Подключение к БД
+*/
 try {
 
     $pdo = new PDO(
@@ -35,50 +58,51 @@ try {
         PDO::ERRMODE_EXCEPTION
     );
 
-    /*
-    Проверяем существование email
-    */
-    $check = $pdo->prepare(
-        "SELECT id
-         FROM regisrtation
-         WHERE MAIL = ?
-         LIMIT 1"
+} catch(PDOException $e) {
+
+    die(
+        'Ошибка подключения к базе: ' .
+        $e->getMessage()
     );
-
-    $check->execute([$email]);
-
-    if ($check->fetch()) {
-        exit('Пользователь с таким email уже зарегистрирован');
-    }
-
-    /*
-    Регистрация
-    */
-    $sql = $pdo->prepare(
-        "INSERT INTO regisrtation (
-            NAME,
-            MAIL,
-            PASSWORD
-        ) VALUES (?, ?, ?)"
-    );
-
-    $sql->execute([
-        $login,
-        $email,
-        $passwordHash
-    ]);
-
-} catch (PDOException $e) {
-
-    error_log(
-        'DB error: ' . $e->getMessage()
-    );
-
-    exit('Ошибка базы данных');
 }
 
 /*
-Отправка письма
+Проверяем email
+*/
+$check = $pdo->prepare(
+    "SELECT id
+     FROM regisrtation
+     WHERE MAIL = ?
+     LIMIT 1"
+);
+
+$check->execute([$email]);
+
+if ($check->fetch()) {
+    exit(
+        'Пользователь с таким email уже существует'
+    );
+}
+
+/*
+Сохраняем пользователя
+*/
+$stmt = $pdo->prepare(
+    "INSERT INTO regisrtation (
+        NAME,
+        MAIL,
+        PASSWORD
+    ) VALUES (?, ?, ?)"
+);
+
+$stmt->execute([
+    $login,
+    $email,
+    $passwordHash
+]);
+
+/*
+Отправляем письмо
 */
 $mail = new PHPMailer(true);
 
@@ -86,23 +110,23 @@ try {
 
     $mail->isSMTP();
 
-    $mail->Host = getenv('SMTP_HOST');
+    $mail->Host = 'smtp.gmail.com';
 
     $mail->SMTPAuth = true;
 
-    $mail->Username = getenv('SMTP_USER');
+    $mail->Username = 'your-email@gmail.com';
 
-    $mail->Password = getenv('SMTP_PASS');
-
-    $mail->Port = getenv('SMTP_PORT') ?: 587;
+    $mail->Password = 'your-app-password';
 
     $mail->SMTPSecure =
         PHPMailer::ENCRYPTION_STARTTLS;
 
+    $mail->Port = 587;
+
     $mail->CharSet = 'UTF-8';
 
     $mail->setFrom(
-        getenv('SMTP_USER'),
+        'your-email@gmail.com',
         'Легкий Шаг'
     );
 
@@ -120,7 +144,7 @@ try {
         <h2>Здравствуйте, {$login}!</h2>
 
         <p>
-            Ваш аккаунт успешно зарегистрирован
+            Вы успешно зарегистрировались
             в интернет-магазине «Легкий Шаг».
         </p>
 
@@ -128,8 +152,6 @@ try {
             Теперь вы можете войти
             в личный кабинет и оформлять заказы.
         </p>
-
-        <br>
 
         <p>
             С уважением,<br>
@@ -142,8 +164,14 @@ try {
 } catch (Exception $e) {
 
     error_log(
-        'Mail error: ' . $mail->ErrorInfo
+        'Ошибка отправки письма: ' .
+        $mail->ErrorInfo
     );
 }
+
+/*
+Редирект
+*/
 header('Location: /account.php');
+
 exit;
