@@ -155,10 +155,7 @@ try {
 
 } catch (Exception $e) {
 
-    error_log(
-        'Ошибка отправки письма: ' .
-        $mail->ErrorInfo
-    );
+    die($mail->ErrorInfo);
 }
 
 /*
