@@ -55,10 +55,13 @@ $fileName =
 |--------------------------------------------------------------------------
 */
 
-$uploadPath =
-    __DIR__ .
-    '/images/' .
-    $fileName;
+$uploadDir = sys_get_temp_dir() . '/uploads/';
+
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+$uploadPath = $uploadDir . $fileName;
 
 move_uploaded_file(
     $image['tmp_name'],
