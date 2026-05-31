@@ -180,26 +180,6 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
         <!-----------------------------------js для переключения меню------------------------------------>
         <script>
-        function updateCartCount() {
-            fetch('get_cart_count.php')
-                .then(response => response.text())
-                .then(count => {
-                    const cartCountSpan = document.querySelector('.cart-count');
-                    if (parseInt(count) > 0) {
-                        if (cartCountSpan) {
-                            cartCountSpan.textContent = count;
-                        } else {
-                            const cartLink = document.querySelector('.cart-link');
-                            const newSpan = document.createElement('span');
-                            newSpan.className = 'cart-count';
-                            newSpan.textContent = count;
-                            cartLink.appendChild(newSpan);
-                        }
-                    } else {
-                        if (cartCountSpan) cartCountSpan.remove();
-                    }
-                });
-            }
         // Фун
             var menuItems=document.getElementById("MenuItems");
             
@@ -212,6 +192,26 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     MenuItems.style.maxHeight="0px";
                 }
             }
+            function updateCartCount() {
+                fetch('get_cart_count.php')
+                    .then(response => response.text())
+                    .then(count => {
+                        const cartCountSpan = document.querySelector('.cart-count');
+                        if (parseInt(count) > 0) {
+                            if (cartCountSpan) {
+                                cartCountSpan.textContent = count;
+                            } else {
+                                const cartLink = document.querySelector('.cart-link');
+                                const newSpan = document.createElement('span');
+                                newSpan.className = 'cart-count';
+                                newSpan.textContent = count;
+                                cartLink.appendChild(newSpan);
+                            }
+                        } else {
+                            if (cartCountSpan) cartCountSpan.remove();
+                        }
+                    });
+        }
         </script>
      
     </body>
