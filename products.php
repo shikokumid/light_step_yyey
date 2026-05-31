@@ -21,7 +21,7 @@ switch ($sort) {
         $sql = "
             SELECT *
             FROM products
-            ORDER BY price ASC
+            ORDER BY CAST(REPLACE(price, ',', '') AS DECIMAL(10,2)) ASC
         ";
         break;
 
@@ -29,7 +29,7 @@ switch ($sort) {
         $sql = "
             SELECT *
             FROM products
-            ORDER BY price DESC
+            ORDER BY CAST(REPLACE(price, ',', '') AS DECIMAL(10,2)) DESC
         ";
         break;
 
