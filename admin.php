@@ -139,11 +139,35 @@ $orders = $pdo->query("
 
 <h2>Добавить товар</h2>
 
-<form action="add_product.php" method="POST">
-    <input type="text" name="item" placeholder="Название" required>
-    <input type="text" name="price" placeholder="Цена" required>
-    <input type="text" name="image" placeholder="image.jpg" required>
-    <button type="submit">Добавить</button>
+<h2>Добавить товар</h2>
+
+<form action="add_product.php" method="POST" enctype="multipart/form-data">
+
+    <input
+        type="text"
+        name="item"
+        placeholder="Название товара"
+        required
+    >
+
+    <input
+        type="number"
+        name="price"
+        placeholder="Цена"
+        required
+    >
+
+    <input
+        type="file"
+        name="image"
+        accept="image/*"
+        required
+    >
+
+    <button type="submit">
+        Добавить товар
+    </button>
+
 </form>
 
 <hr>
