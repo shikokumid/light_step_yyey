@@ -143,12 +143,12 @@ session_start();
                     <h3>Скачайте наше приложение</h3>
                     <p>Скачайте приложение для Android и iOS.</p>
                     <div class="app-logo">
-                        <a href="https://play.google.com/store/games?hl=ru"><img src="images/play-store.png" alt="Google Play"></a>
-                        <a href="https://apps.apple.com/ru/developer/apple/id284417353?mt=12"><img src="images/app-store.png" alt="App Store"></a>
+                        <img src="images/play-store.png" alt="">
+                        <img src="images/app-store.png" alt="">
                     </div>
                 </div>
                 <div class="footer-col-2">
-                    <a href="#"><img src="images/logoi.png" alt="Логотип"></a>
+                    <img src="images/logoi.png">
                     <p>Наша цель — сделать спорт доступным для всех.</p>
                 </div>
                 <div class="footer-col-3">
@@ -163,15 +163,15 @@ session_start();
                 <div class="footer-col-4">
                     <h3>Следите за нами</h3>
                     <ul>
-                        <li>Facebook</li>
-                        <li>Twitter</li>
-                        <li>Instagram</li>
-                        <li>Youtube</li>
+                        <li><a href="https://web.telegram.org"><i class="fa fa-telegram"></i> Telegram</a></li>
+                        <li><a href="https://m.vk.com/"><i class="fa fa-vk"></i> Вконтакте</a></li>
+                        <li><a href="https://max.ru/"><i class="fa fa-max"></i> Max</a></li>
+                        <li><a href="https://www.youtube.com/"><i class="fa fa-youtube"></i> YouTube</a></li>
                     </ul>
                 </div>
             </div>
             <hr>
-            <p class="copyright">Авторские права 2021 - Apurba Kr. Pramanik</p>
+            <p class="copyright">© 2026 Легкий Шаг. Все права защищены.</p>
         </div>
     </div>
 
