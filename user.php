@@ -35,6 +35,47 @@ $lastOrderStmt = $pdo->prepare("SELECT order_date FROM orders WHERE user_login =
 $lastOrderStmt->execute([$username]);
 $lastOrder = $lastOrderStmt->fetch();
 // -------------------------------------------------------------------------
+// Проверка: админ или нет
+$isAdmin = ($username === 'admin');
+
+// Данные для панели администратора
+if ($isAdmin) {
+
+    // Кол-во пользователей
+    $usersCount = $pdo->query("
+        SELECT COUNT(*) 
+        FROM regisrtation
+    ")->fetchColumn();
+
+    // Кол-во товаров
+    $productsCount = $pdo->query("
+        SELECT COUNT(*) 
+        FROM products
+    ")->fetchColumn();
+
+    // Кол-во заказов
+    $ordersCount = $pdo->query("
+        SELECT COUNT(*) 
+        FROM orders
+    ")->fetchColumn();
+
+    // Общая выручка
+    $revenue = $pdo->query("
+        SELECT COALESCE(SUM(total),0)
+        FROM orders
+        WHERE status != 'cancelled'
+    ")->fetchColumn();
+
+    // Последние заказы
+    $recentOrdersStmt = $pdo->query("
+        SELECT *
+        FROM orders
+        ORDER BY order_date DESC
+        LIMIT 5
+    ");
+
+    $recentOrders = $recentOrdersStmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +89,65 @@ $lastOrder = $lastOrderStmt->fetch();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+    <style>
+        /* ---------------- ADMIN PANEL ---------------- */
+
+        .admin-panel {
+            margin-bottom: 40px;
+        }
+        
+        .admin-title {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #222;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            text-align: center;
+            transition: .3s;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .admin-card i {
+            font-size: 34px;
+            color: #ff523b;
+            margin-bottom: 12px;
+        }
+        
+        .admin-card h3 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+        
+        .admin-card p {
+            color: #777;
+        }
+        
+        .admin-orders {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+        }
+        
+        .admin-orders h3 {
+            margin-bottom: 20px;
+        }
+    </style>
 <body>
     <div class="header">
         <div class="container">
@@ -112,7 +212,76 @@ $lastOrder = $lastOrderStmt->fetch();
 
         <div class="user-content">
             <h2 class="user-section-title">Личный кабинет</h2>
+                <?php if ($isAdmin): ?>
 
+                <div class="admin-panel">
+                
+                    <h2 class="admin-title">
+                        <i class="fa fa-shield"></i>
+                        Панель администратора
+                    </h2>
+                
+                    <div class="admin-stats">
+                
+                        <div class="admin-card">
+                            <i class="fa fa-users"></i>
+                            <h3><?= $usersCount ?></h3>
+                            <p>Пользователей</p>
+                        </div>
+                
+                        <div class="admin-card">
+                            <i class="fa fa-shopping-bag"></i>
+                            <h3><?= $productsCount ?></h3>
+                            <p>Товаров</p>
+                        </div>
+                
+                        <div class="admin-card">
+                            <i class="fa fa-shopping-cart"></i>
+                            <h3><?= $ordersCount ?></h3>
+                            <p>Заказов</p>
+                        </div>
+                
+                        <div class="admin-card">
+                            <i class="fa fa-rub"></i>
+                            <h3><?= number_format($revenue, 0, '.', ' ') ?> ₽</h3>
+                            <p>Выручка</p>
+                        </div>
+                
+                    </div>
+                
+                    <div class="admin-orders">
+                        <h3>Последние заказы</h3>
+                
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Заказ</th>
+                                    <th>Пользователь</th>
+                                    <th>Сумма</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                
+                            <tbody>
+                
+                                <?php foreach ($recentOrders as $order): ?>
+                
+                                <tr>
+                                    <td><?= htmlspecialchars($order['order_id']) ?></td>
+                                    <td><?= htmlspecialchars($order['user_login']) ?></td>
+                                    <td><?= number_format($order['total'], 0, '.', ' ') ?> ₽</td>
+                                    <td><?= date('d.m.Y H:i', strtotime($order['order_date'])) ?></td>
+                                </tr>
+                
+                                <?php endforeach; ?>
+                
+                            </tbody>
+                        </table>
+                    </div>
+                
+                </div>
+                
+                <?php endif; ?>
             <div class="profile-info">
                 <div class="profile-card">
                     <h3><i class="fa fa-user-circle"></i> Личная информация</h3>
