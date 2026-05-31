@@ -133,7 +133,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'profile';
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Настройки пользователя - Redstore</title>
+    <title>Настройки пользователя - Легкий шаг</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -151,7 +151,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'profile';
                 <nav>
                     <ul id="MenuItems">
                         <li><a href="index.php">Главная</a></li>
-                        <li><a href="products.php">Товары</a></li>
+                        <li><a href="products.php">Продукты</a></li>
                         <li><a href="about.php">О нас</a></li>
                         <li><a href="contact.php">Контакты</a></li>
                         <?php   
