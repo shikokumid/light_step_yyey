@@ -1,42 +1,95 @@
 <?php
-// auth.php - авторизация пользователя
+session_start();
+try {
 
-// Подключаем файл с подключением к базе данных
-$pdo = new PDO('mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306', 'root', 'zUuofgBLCodqyylBPVacalWLUzyDmyhs');
- 
-// Получаем данные из формы
-$login = trim(filter_var($_POST['login'], FILTER_SANITIZE_SPECIAL_CHARS));
-$password = trim($_POST['password']); // Пароль не фильтруем для хеширования
+    $pdo = new PDO(
+        'mysql:host=mysql-so2r.railway.internal;dbname=railway;port=3306',
+        'root',
+        'zUuofgBLCodqyylBPVacalWLUzyDmyhs'
+    );
 
-// Валидация
-if(strlen($login) < 2){
-    echo'Логин должен содержать минимум 2 символа';
-    exit;
+    $pdo->setAttribute(
+        PDO::ATTR_ERRMODE,
+        PDO::ERRMODE_EXCEPTION
+    );
+
+} catch (PDOException $e) {
+
+    die(
+        'Ошибка подключения к базе: ' .
+        $e->getMessage()
+    );
 }
 
-if(strlen($password) < 2){
-    echo'Пароль должен содержать минимум 2 символа';
-    exit;
+/*
+Получаем данные формы
+*/
+
+$login = trim($_POST['login'] ?? '');
+$password = $_POST['password'] ?? '';
+
+/*
+Проверка
+*/
+
+if (strlen($login) < 2) {
+    exit(
+        'Логин должен содержать минимум 2 символа'
+    );
 }
 
-// Соль для пароля (храните в отдельном конфигурационном файле в реальном проекте!)
-$salt = "lasdl;askd;ak213";
-
-// Хешируем пароль с солью
-$hashed_password = md5($salt . $password);
-
-// Ищем пользователя в базе данных
-$sql = 'SELECT id FROM regisrtation WHERE NAME = ? AND PASSWORD = ?';
-$query = $pdo->prepare($sql);
-$query->execute([$login, $hashed_password]);
-
-// Проверяем, найден ли пользователь
-if($query->rowCount() == 0){
-    echo 'Неверный логин или пароль';
-    exit;
+if (strlen($password) < 2) {
+    exit(
+        'Пароль должен содержать минимум 2 символа'
+    );
 }
-else{
-    setcookie('login', $login, time()+3600 * 24 * 30, '/');
-    header('Location: /user.php');
+
+/*
+Ищем пользователя
+*/
+
+$stmt = $pdo->prepare(
+    "SELECT id, NAME, PASSWORD
+     FROM regisrtation
+     WHERE NAME = ?
+     LIMIT 1"
+);
+
+$stmt->execute([$login]);
+
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+/*
+Проверяем пароль
+*/
+
+if (
+    !$user ||
+    !password_verify(
+        $password,
+        $user['PASSWORD']
+    )
+) {
+
+    exit(
+        'Неверный логин или пароль'
+    );
 }
+
+/*
+Авторизация
+*/
+
+setcookie(
+    'login',
+    $user['NAME'],
+    time() + 3600 * 24 * 30,
+    '/'
+);
+
+header(
+    'Location: /user.php'
+);
+
+exit;
 ?>
