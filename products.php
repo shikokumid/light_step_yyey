@@ -104,17 +104,20 @@ if (isset($_COOKIE['login'])) {
   
 </head>
     <style>
-        .col-4 > a:first-child {
-    display: block;
-    height: 250px;           /* высота, которую вы считаете подходящей */
-    overflow: hidden;        /* обрезаем всё, что выходит за границы */
-}
-
-.col-4 > a:first-child img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;     
-}
+        .col-4 a {
+            display: block;          
+        }
+        
+        .col-4 > a:first-child img {
+            display: block;          
+            width: 100%;
+            height: auto;
+        }
+        .col-4 > a:first-child img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;     
+        }
     </style>
 <body>
     <div class = "header">
