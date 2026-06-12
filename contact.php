@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         </div>
 
         <div class="map-container">
-            <iframe src="https://www.google.com/maps/place/6,+1,+%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0,+125009/@55.7566954,37.6110975,17z/data=!3m1!4b1!4m6!3m5!1s0x46b54a5aa91b8145:0x7e7cddd0c984796c!8m2!3d55.7566954!4d37.6136724!16s%2Fg%2F11q3n6md3g?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D" allowfullscreen="" loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps/search/?api=1&query=%D0%A2%D0%B2%D0%B5%D1%80%D1%81%D0%BA%D0%B0%D1%8F+1,+%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </div>
 
