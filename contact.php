@@ -79,8 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             </div>
         </div>
     </div>
-
-    <!-- Контактная информация и форма -->
     <div class="contact-container">
         <div class="contact-header">
             <h2>Свяжитесь с нами</h2>
@@ -99,8 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                     <div class="contact-info-icon"><i class="fa fa-map-marker"></i></div>
                     <div class="contact-info-text">
                         <h4>Адрес</h4>
-                        <!-- ИЗМЕНЕНО: Новосибирск, Красный проспект -->
-                        <p>г. Новосибирск, Красный проспект, д. 177<br>ТЦ "Легкий шаг", 3 этаж</p>
+                        <p>г. Москва ул. Тверская д.1<br>ТЦ "Легкий шаг", 3 этаж</p>
                     </div>
                 </div>
                 <div class="contact-info-item">
@@ -146,9 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             </div>
         </div>
 
-        <!-- Карта: Новосибирск, Красный проспект, 177 -->
         <div class="map-container">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5717.629558984316!2d82.921084!3d55.030471!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42dfe5c75a7a5d3f%3A0x6c8b7e3c6f5a3a0e!2z0JrRgNCw0YHQvdGL0Lkg0L_RgNC-0YHQv9C10LrRgiwgMTc3LCDQndC-0LLQvtGB0LjQsdC40YDRgdC6LCA2MzAwNDk!5e0!3m2!1sru!2sru!4v1717230400000" allowfullscreen="" loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps/place/6,+1,+%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0,+125009/@55.7566954,37.6110975,17z/data=!3m1!4b1!4m6!3m5!1s0x46b54a5aa91b8145:0x7e7cddd0c984796c!8m2!3d55.7566954!4d37.6136724!16s%2Fg%2F11q3n6md3g?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </div>
 
