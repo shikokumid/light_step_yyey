@@ -103,22 +103,6 @@ if (isset($_COOKIE['login'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   
 </head>
-    <style>
-        .col-4 a {
-            display: block;          
-        }
-        
-        .col-4 > a:first-child img {
-            display: block;          
-            width: 100%;
-            height: auto;
-        }
-        .col-4 > a:first-child img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;     
-        }
-    </style>
 <body>
     <div class = "header">
         <div class="container">
