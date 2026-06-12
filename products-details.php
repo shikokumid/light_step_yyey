@@ -61,7 +61,7 @@ $clean_price = floatval(preg_replace('/[^0-9.]/', '', $product['price']));
     <div class="header">
         <div class="container">
             <div class="navbar">
-                <div class="logo">я
+                <div class="logo">
                     <a href="index.php"><img src="images/logot.png" width="125px"></a>
                 </div>
                 <nav>
