@@ -1,5 +1,11 @@
 /* ===== Стили страницы восстановления пароля ===== */
-
+.col-4 a {
+    display: block;
+}
+.col-4 > a:first-child img {
+    display: block;
+    width: 100%;
+}
 .forgot-password-main {
     min-height: calc(100vh - 300px);
     display: flex;
