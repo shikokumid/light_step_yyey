@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         </div>
 
         <div class="map-container">
-            <iframe src="https://www.google.com/maps/search/?api=1&query=%D0%A2%D0%B2%D0%B5%D1%80%D1%81%D0%BA%D0%B0%D1%8F+1,+%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" allowfullscreen="" loading="lazy"></iframe>
+            <iframe src="https://maps.google.com/?q=Tverskaya+1+Moscow" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </div>
 
