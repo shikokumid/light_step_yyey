@@ -115,8 +115,10 @@ $order_date = date('Y-m-d H:i:s');
                 <div class="order-id">Сумма к оплате: ₽<?php echo number_format($total, 2); ?></div>
                 <!-- QR код для оплаты -->
                 <a href="http://qrcoder.ru" target="_blank">
-                    <img src="http://qrcoder.ru/code/?RedStore%20Order%20%23<?php echo $order_id; ?>%0ASum%3A%20%24<?php echo number_format($total, 2); ?>%0ADate%3A%20<?php echo date('Y-m-d'); ?>&4&0" 
-                         width="200" height="200" 
+                    <a href="http://qrcoder.ru" target="_blank"><img src="http://qrcoder.ru/code/?%EE%EF%EB%E0%F2%E0+%ED%E0+%F1%E0%E9%F2%E5%21&4&0" width="148" height="148" border="0" title="QR код"></a>
+                    <?php echo $order_id; ?><?php echo number_format($total, 2); ?>%0ADate%3A%20<?php echo date('Y-m-d'); ?>&4&0" 
+                         
+                        width="200" height="200" 
                          class="qr-code"
                          alt="QR Code for payment"
                          title="QR код для оплаты заказа">
