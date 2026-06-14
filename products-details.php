@@ -57,6 +57,22 @@ $clean_price = floatval(preg_replace('/[^0-9.]/', '', $product['price']));
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
  
 </head>
+ <style>
+  .size-btn{
+    padding:10px 15px;
+    margin:5px;
+    border:1px solid #ccc;
+    background:#fff;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.size-btn.active{
+    background:#ff523b;
+    color:#fff;
+    border-color:#ff523b;
+}
+ </style>
 <body>
     <div class="header">
         <div class="container">
@@ -118,24 +134,30 @@ $clean_price = floatval(preg_replace('/[^0-9.]/', '', $product['price']));
                 <h4>₽<?= number_format($clean_price, 2) ?></h4>
 
                 <!-- Таблица выбора размера -->
-                <table class="size-table">
-                    <tr>
-                        <td>Select Size</td>
-                        <td>30</td>
-                        <td>33</td>
-                        <td>35</td>
-                        <td>37</td>
-                        <td>39</td>
-                    </tr>
-                </table>
+                <div class="size-selector">
+                    <p>Выберите размер:</p>
+                
+                    <button type="button" class="size-btn" data-size="30">30</button>
+                    <button type="button" class="size-btn" data-size="33">33</button>
+                    <button type="button" class="size-btn" data-size="35">35</button>
+                    <button type="button" class="size-btn" data-size="37">37</button>
+                    <button type="button" class="size-btn" data-size="39">39</button>
+                
+                    <input type="hidden" name="size" id="selectedSize">
+                </div>
 
                 <!-- Форма добавления в корзину с выбором количества -->
                 <form action="add_to_cart.php" method="POST" class="add-to-cart-form" id="detailAddToCartForm">
+                
                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                     <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['item']) ?>">
                     <input type="hidden" name="product_price" value="<?= $product['price'] ?>">
                     <input type="hidden" name="product_image" value="<?= htmlspecialchars($product['image']) ?>">
+                
+                    <input type="hidden" name="size" id="selectedSize">
+                
                     <input type="number" name="quantity" value="1" min="1">
+                
                     <button type="submit" class="btn">Добавить в корзину</button>
                 </form>
 
@@ -359,6 +381,19 @@ $clean_price = floatval(preg_replace('/[^0-9.]/', '', $product['price']));
                 };
             }
         }
+     const sizeButtons = document.querySelectorAll('.size-btn');
+const sizeInput = document.getElementById('selectedSize');
+
+sizeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+
+        sizeButtons.forEach(btn => btn.classList.remove('active'));
+
+        button.classList.add('active');
+
+        sizeInput.value = button.dataset.size;
+    });
+});
     </script>
 </body>
 </html>
