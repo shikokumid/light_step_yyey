@@ -53,7 +53,7 @@ $order_date = date('Y-m-d H:i:s');
                         <li><a href="index.php">Главная</a></li>
                         <li><a href="products.php">Продукты</a></li>
                         <li><a href="about.php">О нас</a></li>
-                        <li><a href="">Контакты</a></li>
+                        <li><a href="contact.php">Контакты</a></li>
                         <?php   
                         if(isset($_COOKIE['login'])) {
                             echo '<li><a href="/user.php">Кабинет пользователя</a></li>';
