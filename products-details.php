@@ -204,8 +204,8 @@ $clean_price = floatval(preg_replace('/[^0-9.]/', '', $product['price']));
                         <i class="fa fa-star"></i>
                         <i class="fa fa-star"></i>
                         <i class="fa fa-star"></i>
-                        <i class="fa fa-star-half-o"></i>
-                        <i class="fa fa-star-o"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
                     </div>
                     <p>₽<?= number_format($rel_price, 2) ?></p>
                     <div class="product-actions">
